@@ -60,6 +60,7 @@ class ExistingMYSQLTable extends AbstractMysqlTable{
 		}
 		if(count($missing)){
 			foreach($missing as $field){
+				echo $field["name"]."<BR><BR>";
 				$sql = "ALTER TABLE `" . addslashes($this->tablename) . "` ADD `" . addslashes($field["name"]) . "` " . addslashes($field["type"]) . ";";
 				$result = $this->mysql->query($sql);
 				$this->fields[] = $field;
@@ -201,12 +202,15 @@ class ExistingMYSQLTable extends AbstractMysqlTable{
 			}else if(is_object($value)){
 /* 				echo "need to handle object subdata\n"; */
 			}else{
-				$colname = $this->getColumnNameForKey($key);
-				if(strlen($set)){
-					$set .= ", ";
+				if (strlen($value) > 0)
+				{
+					$colname = $this->getColumnNameForKey($key);
+					if(strlen($set)){
+						$set .= ", ";
+					}
+					$set .= "`" . $colname . "`";
+					$set .= " = '" . addslashes($value) . "'";
 				}
-				$set .= "`" . $colname . "`";
-				$set .= " = '" . addslashes($value) . "'";
 			}
 		}
 		if(strlen($set)){
@@ -232,13 +236,16 @@ class ExistingMYSQLTable extends AbstractMysqlTable{
 			}else if(is_object($value)){
 /* 				echo "need to handle object subdata\n"; */
 			}else{
-				$colname = $this->getColumnNameForKey($key);
-				if(strlen($fields)){
-					$fields .= ",";
-					$values .= ",";
+				if (strlen($value)) //J.H. Added this check so that the insert will skip fields with blank values. Was getting error inserting empty string into decimal fields.
+				{
+					$colname = $this->getColumnNameForKey($key);
+					if(strlen($fields)){
+						$fields .= ",";
+						$values .= ",";
+					}
+					$fields .= "`" . $colname . "`";
+					$values .= "'" . addslashes($value) . "'";
 				}
-				$fields .= "`" . $colname . "`";
-				$values .= "'" . addslashes($value) . "'";
 			}
 		}
 	
